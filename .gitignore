@@ -75,6 +75,9 @@ flood_api/donnees/
 flood_api/donnees_extra/
 flood_api/donnees_previous_runs/
 flood_api/donnees_forecast/
+flood_api/donnees_extension/
+flood_api/donnees_previous_runs_v2/
+flood_api/donnees_previous_runs_ext/
 flood_api/rf_forecast_results/
 # Environnement virtuel local
 .venv_rf/

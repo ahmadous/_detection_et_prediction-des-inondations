@@ -4,10 +4,49 @@
 **Live platform:** https://sengaal-b4ab0.web.app/
 **Demo video:** https://youtu.be/ml16aAvDvzs
 
-## Results
-- Random Forest: AUC-ROC = 1.000 | Recall = 100% | Zero missed flood events
-- ConvNeXt-Tiny: F1-Score = 96.48% | Zero false alerts
-- Test set: 2,202 observations (2023–2025) across 6 Senegalese zones
+## Results (AKTIION 2026 paper, corrected evaluation)
+
+The results reported in the master's thesis (AUC-ROC = 1.000, zero false alerts) came from a
+target-leakage issue and a validation set reused for model selection. They were superseded by the
+leakage-free, temporally validated results below.
+
+**Flood-risk forecasting (1–3 days ahead, 18 zones)**
+- Test period 2023–2025 (7,632 zone-days): AUC-ROC 0.80–0.81 (Random Forest, gradient boosting,
+  logistic regression), against 0.79 for a seasonal climatology baseline.
+- With a genuine numerical weather forecast (Open-Meteo *Previous Runs*), forward-chaining over three
+  rainy seasons (2024–2026): AUC-ROC **0.852** [0.833–0.871], +0.061 over the reanalysis-only model
+  and +0.012 over the alert rule applied to the raw forecast.
+
+**Visual flood detection (ground-level images)**
+- 410 labeled images, 386 after deduplication; grouped 5-fold cross-validation.
+- ConvNeXt-Tiny: accuracy 94.8%, F1 (flood) 94.7%, recall 95.7%, precision 93.7%, AUC-ROC 0.981,
+  false-positive rate 6.0% — best of four architectures (ResNet-18, EfficientNet-B3, Swin-Tiny).
+
+**Two-stage alert (scenario analysis):** confirming forecast alerts with validated images raises
+alert precision from 0.30 to about 0.87.
+
+## Reproducibility
+
+All experiments are traced in executed notebooks in `flood_api/`:
+
+| Notebook | Content |
+|---|---|
+| `audit_prevision_principale.ipynb` | Main forecasting results, year-blocked CV, climatology/persistence baselines |
+| `validation_temporelle_prevision.ipynb` | Contribution of the numerical forecast, forward-chaining 2024–2026, bootstrap CIs |
+| `verification_18_zones.ipynb` | Geolocation check of the 18 zones, reanalysis/forecast consistency |
+| `flood-coparision.ipynb` | Four CNNs, deduplicated corpus, grouped 5-fold CV, Grad-CAM (executed on Kaggle GPU) |
+| `cnn_comparaison_propre.ipynb` | Same CNN protocol, ready to run on Google Colab |
+
+Meteorological data are not versioned; regenerate them from the open Open-Meteo API:
+
+```bash
+cd flood_api
+python fetch_previous_runs.py          # archived forecasts 2024-01 → 2025-07 (18 zones)
+python fetch_extension.py              # reanalysis + forecasts 2025-08 → 2026-09
+```
+
+Coordinates are read from the reanalysis files, so the forecast and the target always refer to the
+same grid cell.
 
 ## Description
 Saytu Mbeund aide les citoyens et les autorités à signaler, suivre et coordonner les alertes d’inondation en temps réel.
